@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShadowBid — Zero-Knowledge Auctions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo-lockup">
+        <svg class="logo-mark" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6" cy="6" r="2.5" fill="#2563eb" opacity="0.9"/>
+          <circle cx="30" cy="6" r="2.5" fill="#06b6d4" opacity="0.9"/>
+          <circle cx="6" cy="30" r="2.5" fill="#06b6d4" opacity="0.7"/>
+          <circle cx="30" cy="30" r="2.5" fill="#2563eb" opacity="0.7"/>
+          <circle cx="18" cy="18" r="2.5" fill="#06b6d4" opacity="1"/>
+          <line x1="6" y1="6" x2="18" y2="18" stroke="#2563eb" stroke-width="1" stroke-dasharray="3 2" opacity="0.6"/>
+          <line x1="30" y1="6" x2="18" y2="18" stroke="#06b6d4" stroke-width="1" stroke-dasharray="3 2" opacity="0.6"/>
+          <line x1="6" y1="30" x2="18" y2="18" stroke="#06b6d4" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+          <line x1="30" y1="30" x2="18" y2="18" stroke="#2563eb" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+          <line x1="6" y1="6" x2="30" y2="6" stroke="#2563eb" stroke-width="1" stroke-dasharray="2 3" opacity="0.25"/>
+          <line x1="6" y1="30" x2="30" y2="30" stroke="#06b6d4" stroke-width="1" stroke-dasharray="2 3" opacity="0.25"/>
+          <line x1="6" y1="6" x2="6" y2="30" stroke="#2563eb" stroke-width="1" stroke-dasharray="2 3" opacity="0.2"/>
+          <line x1="30" y1="6" x2="30" y2="30" stroke="#06b6d4" stroke-width="1" stroke-dasharray="2 3" opacity="0.2"/>
+        </svg>
+        <div class="logo-text">
+          <span class="logo-name">ShadowBid</span>
+          <span class="logo-sub">SOLANA · ZK</span>
+        </div>
+      </div>
+
+      <nav class="header-nav">
+        <a href="#" class="nav-link">Auctions</a>
+        <a href="#" class="nav-link">Portfolio</a>
+        <a href="#" class="nav-link">Docs</a>
+      </nav>
+
+      <button class="wallet-btn" id="walletBtn">
+        <span class="wallet-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M1 6h12" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="10" cy="9" r="1" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="wallet-label" id="walletLabel">Connect Wallet</span>
+        <span class="wallet-indicator" id="walletIndicator"></span>
+        <div class="wallet-sweep"></div>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- HERO -->
+    <section class="hero-section">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-pulse"></span>
+        <span class="mono">Live Auction · Devnet</span>
+      </div>
+      <h1 class="hero-headline">Zero-Knowledge<br/>Auctions.</h1>
+      <p class="hero-sub">Sealed bids. On-chain proof. No front-running.<br/>The dark pool for institutional OTC blocks.</p>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-label">Volume</div>
+          <div class="stat-value">$4.2M</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sealed Bids</div>
+          <div class="stat-value">1,240</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Private</div>
+          <div class="stat-value sapphire">100%</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUCTION CARD -->
+    <section class="auction-section">
+      <div class="auction-card" id="auctionCard">
+        <div class="card-sheen-layer"></div>
+
+        <div class="auction-header-row">
+          <div class="auction-meta">
+            <span class="lot-badge">LOT #0042</span>
+            <span class="auction-tag">OTC BLOCK</span>
+          </div>
+          <div class="auction-live-status">
+            <span class="live-dot"></span>
+            <span class="mono live-text">LIVE</span>
+          </div>
+        </div>
+
+        <!-- SVG Asset Visualization -->
+        <div class="asset-viz-wrap">
+          <svg class="asset-viz" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <!-- Block A -->
+            <rect class="otc-block b1" x="14" y="86" width="82" height="54" rx="5"/>
+            <text class="block-label" x="55" y="117" text-anchor="middle">BLOCK A</text>
+
+            <!-- Block B -->
+            <rect class="otc-block b2" x="119" y="60" width="82" height="54" rx="5"/>
+            <text class="block-label" x="160" y="91" text-anchor="middle">BLOCK B</text>
+
+            <!-- Block C -->
+            <rect class="otc-block b3" x="224" y="34" width="82" height="54" rx="5"/>
+            <text class="block-label" x="265" y="65" text-anchor="middle">BLOCK C</text>
+
+            <!-- Data-flow connectors -->
+            <path class="flow-line" d="M96 113 C108 113 108 87 119 87"/>
+            <path class="flow-line" d="M201 87 C212 87 212 61 224 61"/>
+
+            <!-- Flow dash animated -->
+            <path class="flow-dash fd1" d="M96 113 C108 113 108 87 119 87"/>
+            <path class="flow-dash fd2" d="M201 87 C212 87 212 61 224 61"/>
+
+            <!-- Node dots -->
+            <circle class="node-dot nd1" cx="96" cy="113" r="3.5"/>
+            <circle class="node-dot nd2" cx="119" cy="87" r="3.5"/>
+            <circle class="node-dot nd3" cx="201" cy="87" r="3.5"/>
+            <circle class="node-dot nd4" cx="224" cy="61" r="3.5"/>
+
+            <!-- Right ephemeral relay bar -->
+            <rect x="309" y="48" width="5" height="44" rx="2" fill="url(#relayGrad)" opacity="0.5"/>
+            <rect x="309" y="63" width="5" height="8" rx="1" fill="#06b6d4" opacity="0.9"/>
+
+            <defs>
+              <linearGradient id="relayGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2563eb" stop-opacity="0.1"/>
+                <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#2563eb" stop-opacity="0.1"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <!-- Detail rows -->
+        <div class="auction-details">
+          <div class="detail-row">
+            <span class="detail-label">Asset</span>
+            <span class="detail-value mono">SOL-PERP · 50,000 Units</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Floor Price</span>
+            <div class="floor-wrap">
+              <div class="floor-shroud" id="floorShroud">
+                <div class="shroud-bar sb1"></div>
+                <div class="shroud-bar sb2"></div>
+                <div class="shroud-bar sb3"></div>
+                <button class="shroud-tap-btn" id="floorRevealBtn">Tap to reveal</button>
+              </div>
+              <span class="detail-value mono floor-revealed" id="floorValue">$2,840 USDC</span>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Ends In</span>
+            <span class="detail-value mono sapphire" id="countdown">--:--:--</span>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="timer-track">
+          <div class="timer-fill" id="timerFill"></div>
+        </div>
+
+        <!-- Bid Section -->
+        <div class="bid-section">
+          <label class="bid-label">Your Sealed Bid</label>
+          <div class="bid-input-group" id="bidInputGroup">
+            <span class="bid-prefix">USDC</span>
+            <input type="number" class="bid-input" id="bidInput" placeholder="500.00" min="500" step="0.01"/>
+            <span class="bid-valid-icon" id="bidValidIcon"></span>
+          </div>
+          <p class="bid-hint" id="bidHint">Minimum bid: 500 USDC</p>
+        </div>
+
+        <!-- Primary CTA -->
+        <button class="primary-btn" id="placeBidBtn">
+          <span class="btn-sheen-sweep"></span>
+          <span class="btn-text">Place Confidential Bid</span>
+          <svg class="btn-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- RECENT SEALED BIDS -->
+    <section class="recent-bids-section">
+      <div class="section-header">
+        <h3 class="section-title">Recent Sealed Bids</h3>
+        <span class="section-badge" id="bidCountBadge">3 bids</span>
+      </div>
+      <div class="bids-list" id="bidsList">
+        <div class="bid-row">
+          <span class="bid-addr mono">0x7f3a…c91e</span>
+          <span class="bid-time">2m ago</span>
+          <span class="bid-masked mono">██████</span>
+        </div>
+        <div class="bid-row">
+          <span class="bid-addr mono">0x2d8b…04f2</span>
+          <span class="bid-time">6m ago</span>
+          <span class="bid-masked mono">████████</span>
+        </div>
+        <div class="bid-row">
+          <span class="bid-addr mono">0x9c11…aa7d</span>
+          <span class="bid-time">14m ago</span>
+          <span class="bid-masked mono">███████</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHADOW PROTOCOL CONSOLE -->
+    <section class="console-section">
+      <div class="console-card">
+        <div class="card-sheen-layer"></div>
+
+        <div class="console-top">
+          <div class="console-eyebrow">
+            <span class="eyebrow-dot" id="consoleDot"></span>
+            <span class="mono console-label">Shadow Protocol Panel</span>
+          </div>
+          <span class="mono console-ver">v2.1.0</span>
+        </div>
+
+        <!-- 4 Protocol Steps -->
+        <div class="proto-steps">
+          <div class="proto-step" id="step-encrypt" data-state="idle">
+            <div class="step-dot-wrap"><span class="step-dot"></span></div>
+            <div class="step-body">
+              <span class="step-name mono">ENCRYPT</span>
+              <span class="step-desc">AES-256-GCM · Ephemeral Key</span>
+            </div>
+            <span class="step-status mono" id="status-encrypt">idle</span>
+          </div>
+          <div class="proto-step" id="step-rollup" data-state="idle">
+            <div class="step-dot-wrap"><span class="step-dot"></span></div>
+            <div class="step-body">
+              <span class="step-name mono">ROLLUP</span>
+              <span class="step-desc">MagicBlock Ephemeral Rollup</span>
+            </div>
+            <span class="step-status mono" id="status-rollup">idle</span>
+          </div>
+          <div class="proto-step" id="step-zkproof" data-state="idle">
+            <div class="step-dot-wrap"><span class="step-dot"></span></div>
+            <div class="step-body">
+              <span class="step-name mono">ZK PROOF</span>
+              <span class="step-desc">Groth16 · Circom 2.0</span>
+            </div>
+            <span class="step-status mono" id="status-zkproof">idle</span>
+          </div>
+          <div class="proto-step" id="step-submit" data-state="idle">
+            <div class="step-dot-wrap"><span class="step-dot"></span></div>
+            <div class="step-body">
+              <span class="step-name mono">SUBMIT</span>
+              <span class="step-desc">Solana Devnet TX</span>
+            </div>
+            <span class="step-status mono" id="status-submit">idle</span>
+          </div>
+        </div>
+
+        <!-- Raw Log Output -->
+        <div class="log-outer">
+          <div class="crt-scanlines"></div>
+          <div class="console-log" id="consoleLog">
+            <div class="log-line sys">▸ Shadow Protocol initialized. Awaiting bid input…</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

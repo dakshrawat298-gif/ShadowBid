@@ -1,0 +1,35 @@
+Role: You are an Expert Web3 Frontend Developer and UI/UX Designer.
+
+Task: I lost my previous project files. I need you to completely rebuild the "ShadowBid" application exactly as shown in the attached video and screenshots. I want a 110% perfect match of the UI, animations, and logic. Read the attached screenshots very carefully because they contain the exact design system, CSS, and JS logic that your previous iteration used.
+
+Here is the exact Design System & Architecture you need to implement based on the screenshots:
+
+1. Global Styles & Background (style.css):
+- Colors: Background shifted from flat #0d0d0d to a rich obsidian (#050505) with cool-blue radial gradients layered on top. All harsh neon greens are gone — replaced with sophisticated Sapphire (#2563eb) -> Aquamarine (#06b6d4) for accents, and muted Emerald (#10b981) for success states only.
+- Typography: A curated trio: Inter for UI text, Space Grotesk for display/headings, IBM Plex Mono for all terminal and data elements.
+- Animated Background: Create a <canvas> element that draws 28 slowly-drifting faint dashed lines in cool hues (sapphire and aqua), which shift opacity and position continuously — creating the "data shadow" / ephemeral connection feel.
+
+2. "Shadowfall" Card Surface:
+- True glassmorphism (`backdrop-filter: blur`) on every card.
+- Every card has a 4-layer box-shadow stack: inner top highlight, inner bottom depth, near-field shadow, and a wide ambient float shadow.
+- Top-left border edges are lightened to simulate a polished edge catching light.
+- A `::before` pseudo-element paints a subtle sheen gradient across the surface.
+
+3. UI Components (index.html & style.css):
+- Header: Sticky glassmorphic header. Logo integrates a small SVG mark of dots connected by thin dashed lines next to the "ShadowBid / SOLANA · ZK" typographic lockup.
+- Wallet Button: Gunmetal surface with an animated light-pulse sweep that crosses it every 4 seconds, intensifying on hover. Transitions to a green blinking "Connected" state.
+- Hero Section: Headline ("Zero-Knowledge Auctions."), subheadline, and live stat cards (Volume: $4.2M, Sealed Bids: 1,240, Private: 100%).
+- Auction Card: The asset is an SVG visualization: three staggered rectangles suggesting stacked OTC blocks, with animated dashed data-flow lines moving through them. The card itself has a continuous breathing animation — the ambient glow alternates between sapphire and aquamarine.
+- Floor Price: Uses a layered shroud effect: blur + three gradient bars replacing simple stars. Tap to reveal.
+- Bid Input: USDC prefix and inline validation. Shake + red border for invalid input.
+- Primary Button: Glowing "Place Confidential Bid". Deep sapphire -> aquamarine gradient with wide uppercase letter-spacing (0.18em). Ambient pulse animation alternates the outer glow. On hover: a sheen sweep animates across it. On press: `scale(0.977) translateY(2px)` with reduced glow — feels physical.
+
+4. Logic & Terminal Console (script.js):
+- Real-time countdown ticking every second.
+- Full bid validation (wallet check, min 500 USDC).
+- Console (Shadow Protocol Panel): Transformed into a structured status panel at the bottom with 4 named protocol steps (ENCRYPT -> ROLLUP -> ZK PROOF -> SUBMIT), each with a state machine: idle (gray) -> processing (amber pulsing dot) -> done (muted emerald).
+- A very subtle CRT scanline overlay sits above the raw log output. The console eyebrow dot tracks overall state.
+- Async Terminal Sequence: On bid, simulate: AES-256-GCM encryption -> MagicBlock Ephemeral Rollup -> Groth16 ZK proof -> Solana devnet TX confirmation.
+- Masked Recent Bids List: New masked bid entry appended to the list after each successful submission.
+
+Please read all images, extract the specific values mentioned in them, and watch the video to match the timings and visual vibe perfectly. Build all three files (index.html, style.css, script.js) and make it live.
