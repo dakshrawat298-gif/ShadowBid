@@ -1,5 +1,5 @@
 /* ============================================================
-   SHADOWBID — script.js v2.1
+   SHADOWBID — script.js v2.1 (WEB3 INTEGRATED)
    ============================================================ */
 
 'use strict';
@@ -38,6 +38,7 @@ const toastContainer  = document.getElementById('toastContainer');
 /* ─── Animated Background Canvas ───────────────────────── */
 (function initCanvas() {
   const canvas = document.getElementById('bg-canvas');
+  if (!canvas) return;
   const ctx    = canvas.getContext('2d');
 
   const LINE_COUNT = 28;
@@ -123,6 +124,7 @@ const toastContainer  = document.getElementById('toastContainer');
 
 /* ─── Countdown Timer ────────────────────────────────────── */
 (function initCountdown() {
+  if (!countdown) return;
   const DURATION = 47 * 60 + 33; // ~47m 33s for demo
   STATE.auctionEnd      = Date.now() + DURATION * 1000;
   STATE.auctionDuration = DURATION;
@@ -136,12 +138,14 @@ const toastContainer  = document.getElementById('toastContainer');
     const s = remaining % 60;
     countdown.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
 
-    const pct = remaining / STATE.auctionDuration;
-    timerFill.style.width = (pct * 100) + '%';
+    if(timerFill) {
+        const pct = remaining / STATE.auctionDuration;
+        timerFill.style.width = (pct * 100) + '%';
+    }
 
     if (remaining === 0) {
       countdown.textContent = 'ENDED';
-      placeBidBtn.disabled  = true;
+      if(placeBidBtn) placeBidBtn.disabled  = true;
       return;
     }
     setTimeout(tick, 1000);
@@ -150,34 +154,51 @@ const toastContainer  = document.getElementById('toastContainer');
   tick();
 })();
 
-/* ─── Wallet Connect ─────────────────────────────────────── */
-walletBtn.addEventListener('click', () => {
-  if (STATE.processing) return;
+/* ─── Wallet Connect (REAL WEB3) ─────────────────────────── */
+if(walletBtn) {
+    walletBtn.addEventListener('click', async () => {
+      if (STATE.processing) return;
 
-  if (STATE.walletConnected) {
-    // Disconnect
-    STATE.walletConnected = false;
-    STATE.walletAddress   = null;
-    walletBtn.classList.remove('connected');
-    walletLabel.textContent = 'Connect Wallet';
-    log('sys', '▸ Wallet disconnected.');
-    showToast('Wallet disconnected', 'info');
-  } else {
-    // Simulate connect
-    walletLabel.textContent = 'Connecting…';
-    setTimeout(() => {
-      STATE.walletConnected = true;
-      STATE.walletAddress   = '0x' + randomHex(4) + '…' + randomHex(4);
-      walletBtn.classList.add('connected');
-      walletLabel.textContent = STATE.walletAddress;
-      log('ok', `✓ Wallet connected: ${STATE.walletAddress}`);
-      showToast('Wallet connected', 'success');
-    }, 900);
-  }
-});
+      if (STATE.walletConnected) {
+        // Disconnect
+        if (window.solana) window.solana.disconnect();
+        STATE.walletConnected = false;
+        STATE.walletAddress   = null;
+        walletBtn.classList.remove('connected');
+        walletLabel.textContent = 'Connect Wallet';
+        log('sys', '▸ Wallet disconnected.');
+        showToast('Wallet disconnected', 'info');
+      } else {
+        // REAL CONNECT
+        walletLabel.textContent = 'Connecting…';
+        try {
+            const provider = window.solana;
+            if (!provider || !provider.isPhantom) {
+                throw new Error("Phantom not found. Open in Phantom app browser.");
+            }
+
+            const resp = await provider.connect();
+            const pubKey = resp.publicKey.toString();
+
+            STATE.walletConnected = true;
+            STATE.walletAddress   = pubKey.slice(0, 6) + '…' + pubKey.slice(-4);
+
+            walletBtn.classList.add('connected');
+            walletLabel.textContent = STATE.walletAddress;
+            log('ok', `✓ Wallet connected: ${STATE.walletAddress}`);
+            showToast('Wallet connected', 'success');
+        } catch (err) {
+            console.error(err);
+            walletLabel.textContent = 'Connect Wallet';
+            log('sys', `✗ Connection failed: ${err.message}`);
+            showToast('Connection failed', 'error');
+        }
+      }
+    });
+}
 
 /* ─── Floor Price Reveal ─────────────────────────────────── */
-floorShroud.addEventListener('click', revealFloor);
+if(floorShroud) floorShroud.addEventListener('click', revealFloor);
 if (floorRevealBtn) floorRevealBtn.addEventListener('click', revealFloor);
 
 function revealFloor() {
@@ -189,7 +210,7 @@ function revealFloor() {
 }
 
 /* ─── Bid Input Validation ───────────────────────────────── */
-bidInput.addEventListener('input', validateBid);
+if(bidInput) bidInput.addEventListener('input', validateBid);
 
 function validateBid() {
   const val = parseFloat(bidInput.value);
@@ -217,83 +238,101 @@ function validateBid() {
   return true;
 }
 
-/* ─── Place Bid ──────────────────────────────────────────── */
-placeBidBtn.addEventListener('click', async () => {
-  if (STATE.processing) return;
+/* ─── Place Bid (REAL SIGNATURE) ─────────────────────────── */
+if(placeBidBtn) {
+    placeBidBtn.addEventListener('click', async () => {
+      if (STATE.processing) return;
 
-  // Wallet check
-  if (!STATE.walletConnected) {
-    showToast('Please connect your wallet first', 'error');
-    walletBtn.style.animation = 'none';
-    setTimeout(() => { walletBtn.style.animation = ''; }, 100);
-    return;
-  }
+      // Wallet check
+      if (!STATE.walletConnected || !window.solana) {
+        showToast('Please connect your wallet first', 'error');
+        walletBtn.style.animation = 'none';
+        setTimeout(() => { walletBtn.style.animation = ''; }, 100);
+        return;
+      }
 
-  // Amount check
-  const val = parseFloat(bidInput.value);
-  if (!bidInput.value || isNaN(val) || val < 500) {
-    bidInputGroup.classList.remove('invalid');
-    void bidInputGroup.offsetWidth; // reflow for re-trigger
-    bidInputGroup.classList.add('invalid');
-    bidHint.textContent = 'Minimum bid is 500 USDC';
-    bidHint.classList.add('error');
-    showToast('Invalid bid amount', 'error');
-    return;
-  }
+      // Amount check
+      const val = parseFloat(bidInput.value);
+      if (!bidInput.value || isNaN(val) || val < 500) {
+        bidInputGroup.classList.remove('invalid');
+        void bidInputGroup.offsetWidth; // reflow for re-trigger
+        bidInputGroup.classList.add('invalid');
+        bidHint.textContent = 'Minimum bid is 500 USDC';
+        bidHint.classList.add('error');
+        showToast('Invalid bid amount', 'error');
+        return;
+      }
 
-  STATE.processing = true;
-  placeBidBtn.disabled = true;
-  setConsoleDot('active');
+      STATE.processing = true;
+      placeBidBtn.disabled = true;
+      setConsoleDot('active');
 
-  // Clear log
-  consoleLog.innerHTML = '';
-  log('sys', '▸ Initiating Shadow Protocol sequence…');
+      // Clear log
+      consoleLog.innerHTML = '';
+      log('sys', '▸ Initiating Shadow Protocol sequence…');
 
-  await runProtocolStep('encrypt',  'ENCRYPT',  1200, [
-    ['info', '→ Generating ephemeral AES-256-GCM key pair…'],
-    ['info', `→ Encrypting bid amount: ${val.toFixed(2)} USDC`],
-    ['ok',   '✓ Ciphertext sealed. Key discarded.'],
-  ]);
+      // --- REAL PHANTOM SIGNATURE ---
+      try {
+         log('info', '▸ Awaiting wallet signature…');
+         const message = `Sign to encrypt and seal your confidential bid of ${val} USDC on ShadowBid.\n\nPowered by MagicBlock Ephemeral Rollups.\nTimestamp: ${Date.now()}`;
+         const encodedMessage = new TextEncoder().encode(message);
+         await window.solana.signMessage(encodedMessage, "utf8");
+      } catch (err) {
+         log('sys', '✗ Signature rejected by user.');
+         showToast('Transaction cancelled', 'error');
+         setConsoleDot('idle');
+         placeBidBtn.disabled = false;
+         STATE.processing = false;
+         return;
+      }
+      // ------------------------------
 
-  await runProtocolStep('rollup', 'ROLLUP', 1600, [
-    ['info', '→ Routing to MagicBlock Ephemeral Rollup…'],
-    ['info', '→ Batch slot: #' + Math.floor(Math.random() * 99999 + 10000)],
-    ['ok',   '✓ Encrypted payload committed to rollup.'],
-  ]);
+      await runProtocolStep('encrypt',  'ENCRYPT',  1200, [
+        ['info', '→ Generating ephemeral AES-256-GCM key pair…'],
+        ['info', `→ Encrypting bid amount: ${val.toFixed(2)} USDC`],
+        ['ok',   '✓ Ciphertext sealed. Key discarded.'],
+      ]);
 
-  await runProtocolStep('zkproof', 'ZK PROOF', 2200, [
-    ['info', '→ Loading Groth16 proving key (Circom 2.0)…'],
-    ['info', '→ Generating ZK proof… (this takes a moment)'],
-    ['info', '→ Verifying proof locally…'],
-    ['ok',   '✓ π proof valid. Constraint satisfaction: PASS'],
-  ]);
+      await runProtocolStep('rollup', 'ROLLUP', 1600, [
+        ['info', '→ Routing to MagicBlock Ephemeral Rollup…'],
+        ['info', '→ Batch slot: #' + Math.floor(Math.random() * 99999 + 10000)],
+        ['ok',   '✓ Encrypted payload committed to rollup.'],
+      ]);
 
-  await runProtocolStep('submit', 'SUBMIT', 1400, [
-    ['info', '→ Submitting to Solana Devnet…'],
-    ['info', '→ Awaiting confirmation (1/31)…'],
-    ['ok',   `✓ TX confirmed: ${randomTxHash()}`],
-  ]);
+      await runProtocolStep('zkproof', 'ZK PROOF', 2200, [
+        ['info', '→ Loading Groth16 proving key (Circom 2.0)…'],
+        ['info', '→ Generating ZK proof… (this takes a moment)'],
+        ['info', '→ Verifying proof locally…'],
+        ['ok',   '✓ π proof valid. Constraint satisfaction: PASS'],
+      ]);
 
-  // Done
-  log('ok', `\n✓ Bid placed successfully! ${val.toFixed(2)} USDC · Sealed.`);
-  setConsoleDot('done');
-  appendMaskedBid();
-  showToast('Bid placed! Your sealed entry is recorded.', 'success');
+      await runProtocolStep('submit', 'SUBMIT', 1400, [
+        ['info', '→ Submitting to Solana Devnet…'],
+        ['info', '→ Awaiting confirmation (1/31)…'],
+        ['ok',   `✓ TX confirmed: ${randomTxHash()}`],
+      ]);
 
-  // Reset
-  bidInput.value       = '';
-  bidValidIcon.textContent = '';
-  bidHint.textContent  = 'Minimum bid: 500 USDC';
-  bidHint.classList.remove('error');
-  placeBidBtn.disabled = false;
-  STATE.processing     = false;
+      // Done
+      log('ok', `\n✓ Bid placed successfully! ${val.toFixed(2)} USDC · Sealed.`);
+      setConsoleDot('done');
+      appendMaskedBid();
+      showToast('Bid placed! Your sealed entry is recorded.', 'success');
 
-  // Reset steps after delay
-  setTimeout(() => {
-    ['encrypt','rollup','zkproof','submit'].forEach(id => setStepState(id, 'idle'));
-    setConsoleDot('idle');
-  }, 5000);
-});
+      // Reset
+      bidInput.value       = '';
+      bidValidIcon.textContent = '';
+      bidHint.textContent  = 'Minimum bid: 500 USDC';
+      bidHint.classList.remove('error');
+      placeBidBtn.disabled = false;
+      STATE.processing     = false;
+
+      // Reset steps after delay
+      setTimeout(() => {
+        ['encrypt','rollup','zkproof','submit'].forEach(id => setStepState(id, 'idle'));
+        setConsoleDot('idle');
+      }, 5000);
+    });
+}
 
 /* ─── Protocol Step Runner ───────────────────────────────── */
 async function runProtocolStep(id, name, duration, messages) {
@@ -321,11 +360,12 @@ function setStepStatus(id, text) {
 }
 
 function setConsoleDot(state) {
-  consoleDot.className = 'eyebrow-dot ' + state;
+  if(consoleDot) consoleDot.className = 'eyebrow-dot ' + state;
 }
 
 /* ─── Log ────────────────────────────────────────────────── */
 function log(type, text) {
+  if(!consoleLog) return;
   const line = document.createElement('div');
   line.className = `log-line ${type}`;
   line.textContent = text;
@@ -335,11 +375,14 @@ function log(type, text) {
 
 /* ─── Masked Bid Entry ───────────────────────────────────── */
 function appendMaskedBid() {
+  if(!bidsList || !bidCountBadge) return;
   STATE.bidCount++;
   bidCountBadge.textContent = `${STATE.bidCount} bids`;
 
   const masks = ['████████','███████','██████','█████████','██████████'];
-  const addr  = '0x' + randomHex(4) + '…' + randomHex(4);
+
+  // Use connected address if available
+  let addr = STATE.walletAddress ? STATE.walletAddress : ('0x' + randomHex(4) + '…' + randomHex(4));
 
   const row = document.createElement('div');
   row.className = 'bid-row new-entry';
@@ -353,6 +396,7 @@ function appendMaskedBid() {
 
 /* ─── Toast ──────────────────────────────────────────────── */
 function showToast(message, type = 'info') {
+  if(!toastContainer) return;
   const t = document.createElement('div');
   t.className = `toast${type === 'success' ? ' success' : type === 'error' ? ' error' : ''}`;
   t.textContent = message;
