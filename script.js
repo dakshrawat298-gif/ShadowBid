@@ -422,3 +422,43 @@ function randomTxHash() {
   for (let i = 0; i < 44; i++) h += chars[Math.floor(Math.random() * chars.length)];
   return h.slice(0, 8) + '…' + h.slice(-8);
 }
+
+/* ─── NEW: Live Dummy Metrics (Magic Trick!) ─────────────── */
+// Ye function HTML ko bina touch kiye $4.2M aur 1,240 ko dhoondhega aur unhe live badhayega
+(function initLiveMetrics() {
+  let volumeEl = null;
+  let bidsEl = null;
+
+  // Screen par saare text ko check karke apne element pakadna
+  const elements = document.querySelectorAll('*');
+  elements.forEach(el => {
+    if (el.children.length === 0) { 
+      if (el.textContent.includes('$4.2M')) volumeEl = el;
+      if (el.textContent.trim() === '1,240') bidsEl = el;
+    }
+  });
+
+  let currentVolume = 4200000;
+  let currentBids = 1240;
+
+  function updateMetrics() {
+    // Volume ko randomly increase karna
+    if (volumeEl && Math.random() > 0.6) {
+      currentVolume += Math.floor(Math.random() * 45000) + 15000;
+      const displayVol = (currentVolume / 1000000).toFixed(2);
+      volumeEl.textContent = `$${displayVol}M`;
+    }
+
+    // Bids ko randomly increase karna
+    if (bidsEl && Math.random() > 0.7) {
+      currentBids += Math.floor(Math.random() * 3) + 1;
+      bidsEl.textContent = currentBids.toLocaleString();
+    }
+
+    // Har 3 se 7 second ke beech me numbers badalna (Live on-chain feel ke liye)
+    setTimeout(updateMetrics, Math.floor(Math.random() * 4000) + 3000);
+  }
+
+  // Jadoo shuru karein 4 second baad
+  setTimeout(updateMetrics, 4000);
+})();
