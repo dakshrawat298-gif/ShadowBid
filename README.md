@@ -9,7 +9,8 @@
 
 **The ultimate cure for MEV, Front-running, and Value Leakage in Decentralized Finance.**
 
-[Live MVP](#) • [Pitch Video](#) • [Technical Architecture](#-architecture--magicblock-integration)
+[Live MVP](https://dakshrawat298-gif.github.io/ShadowBid/) • [Pitch Video](#) • [Technical Architecture](#-architecture--magicblock-integration)
+
 
 </div>
 
